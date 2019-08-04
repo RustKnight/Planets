@@ -13,12 +13,19 @@ using namespace std;
 
 
 class Planet {
-
-	Planet(olc::PixelGameEngine& pge, int radius, Vec2& position, olc::Pixel color)
+public:
+	Planet(olc::PixelGameEngine& pge, int radius, Vec2 position, olc::Pixel color)
 		:
-		pge{pge}, radius {radius}, position { position }, color { color}
+		pge{pge}, radius {radius}, position { position }, color { color}, state {STABLE}, deployed {false}
 	{}
 
+	void draw();
+	void modifySize(int mod);
+	void followMouse();
+	bool isDeployed() const;
+	void deploy();
+
+	enum State {STABLE, ORBITING};
 
 
 
@@ -28,4 +35,8 @@ private:
 	Vec2 position;
 	olc::Pixel color;
 	olc::PixelGameEngine& pge;
+	State state;
+	vector<Planet*>vPlanets;
+
+	bool deployed;
 };
