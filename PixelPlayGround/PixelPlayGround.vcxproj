@@ -115,10 +115,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="Vec2.h" />
+    <ClInclude Include="olcPGE.h" />
+    <ClInclude Include="Planet.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="olcPGE.h" />
+    <ClCompile Include="main2.cpp" />
+    <ClCompile Include="Vec2.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
