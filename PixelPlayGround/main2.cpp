@@ -41,6 +41,9 @@ public:
 		Clear(olc::BLACK);
 
 		checkMouse();
+
+
+
 		
 		for (Planet& plnt : vTotalPlanets)
 			plnt.draw();
@@ -54,10 +57,31 @@ public:
 	bool allPlanetsDeployed();
 	Planet& getUndeployedPlanet();
 
+
 	// DEMO Data Members
 private:
 	vector<Planet> vTotalPlanets;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

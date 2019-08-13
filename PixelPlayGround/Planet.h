@@ -19,15 +19,23 @@ public:
 		pge{pge}, radius {radius}, position { position }, color { color}, state {STABLE}, deployed {false}
 	{}
 
+
+public:
+
 	void draw();
+	void update(float fElapsedTime);
 	void modifySize(int mod);
 	void followMouse();
 	bool isDeployed() const;
-	void deploy();
-
+	void deploy();	
+	void showGrav();
 	enum State {STABLE, ORBITING};
 
 
+private:
+	void storeGravPoints();
+	void makeThemGravitate(float fElapsedTime);
+	void move(Planet& plnt, Vec2& here) const;
 
 
 private:
@@ -36,7 +44,8 @@ private:
 	olc::Pixel color;
 	olc::PixelGameEngine& pge;
 	State state;
-	vector<Planet*>vPlanets;
+	vector<Planet*>vGravField;
+	vector<Vec2>vGravPoints;
 
 	bool deployed;
 };
