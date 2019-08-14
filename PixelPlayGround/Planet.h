@@ -16,7 +16,13 @@ class Planet {
 public:
 	Planet(olc::PixelGameEngine& pge, int radius, Vec2 position, olc::Pixel color)
 		:
-		pge{pge}, radius {radius}, position { position }, color { color}, state {STABLE}, deployed {false}
+		pge		{pge}, 
+		radius	{radius}, 
+		position{ position }, 
+		color	{ color}, 
+		state	{STABLE}, 
+		deployed{false}, 
+		fTicker {1.0f}
 	{}
 
 
@@ -31,10 +37,12 @@ public:
 	void showGrav();
 	enum State {STABLE, ORBITING};
 
+	void attachPlanet(Planet& plnt);
 
 private:
 	void storeGravPoints();
-	void makeThemGravitate(float fElapsedTime);
+	void sortGravPoints();
+	void makeThemGravitate();
 	void move(Planet& plnt, Vec2& here) const;
 
 
@@ -46,6 +54,7 @@ private:
 	State state;
 	vector<Planet*>vGravField;
 	vector<Vec2>vGravPoints;
+	float fTicker;
 
 	bool deployed;
 };

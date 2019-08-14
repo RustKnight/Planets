@@ -1,4 +1,5 @@
 #include "Planet.h"
+//#include <algorithm>
 
 void Planet::draw()
 {
@@ -7,7 +8,15 @@ void Planet::draw()
 
 void Planet::update(float fElapsedTime)
 {
+	fTicker += fElapsedTime * 20;
 
+	if (fTicker >= vGravPoints.size())
+		fTicker = 0.0f;
+
+	makeThemGravitate();
+
+	//string s = to_string(fTicker);
+	//pge.DrawString(5, 5, s, olc::WHITE, 1);
 }
 
 void Planet::modifySize(int mod)
@@ -44,17 +53,93 @@ void Planet::storeGravPoints()
 		vGravPoints.push_back (Vec2 (position.x - y0, position.y + x0));
 		vGravPoints.push_back (Vec2 (position.x - y0, position.y - x0));
 		vGravPoints.push_back (Vec2 (position.x - x0, position.y - y0));
+
 		if (d < 0) d += 4 * x0++ + 6;
 		else d += 4 * (x0++ - y0--) + 10;
 	}
 
+	sortGravPoints();
 }
 
-void Planet::makeThemGravitate(float fElapsedTime)
+void Planet::sortGravPoints()
+{
+	
+	// sort to find middle of Y first
+	sort(vGravPoints.begin(), vGravPoints.end(), [](Vec2& a, Vec2& b) {
+		return a.y < b.y;
+	});
+	const int Ymiddle = vGravPoints[vGravPoints.size() - 1].y - ( (vGravPoints[vGravPoints.size() - 1].y - vGravPoints[0].y) / 2);
+	
+
+	// sort all Vec2 according to their X from LEFT to RIGHT
+	sort(vGravPoints.begin(), vGravPoints.end(), [](Vec2& a, Vec2& b) {
+		return a.x < b.x;
+	});
+	const int Xmiddle = vGravPoints[vGravPoints.size() - 1].x - ((vGravPoints[vGravPoints.size() - 1].x - vGravPoints[0].x) / 2);
+
+
+	// sort top half of coords
+	sort(vGravPoints.begin(), vGravPoints.end(), [Xmiddle](Vec2& a, Vec2& b) {
+		
+		if ((int)a.x == (int)b.x)
+			if (a.x < Xmiddle)
+				return a.y > b.y;
+			else
+				return a.y < b.y;
+
+		return a.x < b.x;
+	});
+
+	
+
+
+	vector<Vec2> orderedCoords;
+
+	// get the first half of circel into NEW vec2
+	for (auto i = vGravPoints.begin(), e = vGravPoints.end(); i != e; ++i)
+	{
+		if (i->y <= Ymiddle) 
+			orderedCoords.push_back(*i);
+	}
+
+
+	// sort X axis in reverse order
+	sort(vGravPoints.begin(), vGravPoints.end(), [](Vec2& a, Vec2& b) {
+		return a.x > b.x;
+	});
+	// deal with equal X points
+	sort(vGravPoints.begin(), vGravPoints.end(), [Xmiddle](Vec2& a, Vec2& b) {
+
+		if ((int)a.x == (int)b.x)
+			if (a.x < Xmiddle)
+				return a.y > b.y;
+			else
+				return a.y < b.y;
+
+		return a.x > b.x;
+	});
+
+
+	// add lower half of circel
+	for (auto i = vGravPoints.begin(), e = vGravPoints.end(); i != e; ++i)
+	{
+		if (i->y > Ymiddle)
+			orderedCoords.push_back(*i);
+	}
+
+
+	
+	vGravPoints = orderedCoords;
+
+}
+
+
+void Planet::makeThemGravitate()
 {
 	if (!vGravField.empty())
-		for (Planet* plnt : vGravField)
-			plnt->move
+		for (int i = 0; i < vGravField.size(); i++)
+			move(*vGravField[i], vGravPoints[fTicker]);
+		
 }
 
 void Planet::move(Planet& plnt, Vec2& here) const
@@ -85,6 +170,11 @@ void Planet::showGrav()
 			else d += 4 * (x0++ - y0--) + 10;
 		}
 	
+}
+
+void Planet::attachPlanet(Planet& plnt)
+{
+	vGravField.push_back(&plnt);
 }
 
 void Planet::followMouse()
