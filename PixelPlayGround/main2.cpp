@@ -43,12 +43,12 @@ public:
 
 
 		
-		for (Planet& plnt : vTotalPlanets) {
-			plnt.update(fElapsedTime);
-			plnt.draw();
+		for (Planet* plnt : vTotalPlanets) {
+			plnt->update(fElapsedTime);
+			plnt->draw();
 		}
 	
-			checkMouse();
+		checkMouse();
 
 
 		return true;
@@ -64,7 +64,7 @@ public:
 
 	// DEMO Data Members
 private:
-	vector<Planet> vTotalPlanets;
+	vector<Planet*> vTotalPlanets;
 };
 
 
@@ -107,7 +107,7 @@ int main() {
 
 void Demo::createPlanet()
 {
-	vTotalPlanets.push_back(Planet{ *this, 10, Vec2{ float(GetMouseX() - 10), float(GetMouseY() - 10) }, olc::Pixel {uint8_t (rand() % 255), uint8_t(rand() % 255), uint8_t(rand() % 255) } });
+	vTotalPlanets.push_back(new Planet{ *this, 10, Vec2{ float(GetMouseX() - 10), float(GetMouseY() - 10) }, olc::Pixel {uint8_t (rand() % 255), uint8_t(rand() % 255), uint8_t(rand() % 255) } });
 
 }
 
@@ -147,8 +147,8 @@ void Demo::checkMouse()
 
 			if (vTotalPlanets.size() > 1) {			
 
-				Planet& last_created_planet = vTotalPlanets[vTotalPlanets.size() - 1];
-				vTotalPlanets[0].attachPlanet(last_created_planet);
+				Planet& last_created_planet = *vTotalPlanets[vTotalPlanets.size() - 1];
+				vTotalPlanets[0]->attachPlanet(last_created_planet);
 			}
 		}
 	}
@@ -156,8 +156,8 @@ void Demo::checkMouse()
 
 bool Demo::allPlanetsDeployed()
 {
-	for (Planet& plnt : vTotalPlanets)
-		if (!plnt.isDeployed())
+	for (Planet* plnt : vTotalPlanets)
+		if (!plnt->isDeployed())
 			return false;
 
 	return true;
@@ -165,9 +165,9 @@ bool Demo::allPlanetsDeployed()
 
 Planet& Demo::getUndeployedPlanet()
 {
-	for (Planet& plnt : vTotalPlanets)
-		if (!plnt.isDeployed())
-			return plnt;
+	for (Planet* plnt : vTotalPlanets)
+		if (!plnt->isDeployed())
+			return *plnt;
 
 	//WARNING: RETURN CONTROL PATH SHOULD BE FULLY IMPLEMENTED
 }

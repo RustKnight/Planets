@@ -25,7 +25,6 @@ public:
 		fTicker {1.0f}
 	{}
 
-
 public:
 
 	void draw();
