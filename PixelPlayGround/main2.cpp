@@ -169,5 +169,6 @@ Planet& Demo::getUndeployedPlanet()
 		if (!plnt->isDeployed())
 			return *plnt;
 
+
 	//WARNING: RETURN CONTROL PATH SHOULD BE FULLY IMPLEMENTED
 }

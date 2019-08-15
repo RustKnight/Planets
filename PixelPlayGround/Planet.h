@@ -41,13 +41,16 @@ public:
 private:
 	void storeGravPoints();
 	void sortGravPoints();
-	void makeThemGravitate();
-	void move(Planet& plnt, Vec2& here) const;
+	void updateGravPoints();
 
+	void makeThemGravitate();
+	void move(Planet& plnt, Vec2& here);
+	float getTick() const;
 
 private:
 	int radius;
 	Vec2 position;
+	Vec2 deltaPos;
 	olc::Pixel color;
 	olc::PixelGameEngine& pge;
 	State state;

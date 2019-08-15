@@ -6,6 +6,36 @@ void Planet::draw()
 	pge.FillCircle(position.x, position.y, radius, color);
 }
 
+
+void Planet::makeThemGravitate()
+{
+	if (!vGravField.empty())
+		for (int i = 0; i < vGravField.size(); i++)
+			move(*vGravField[i], vGravPoints[vGravField[i]->getTick()]);
+}
+
+void Planet::updateGravPoints()
+{
+	for (Vec2& point : vGravPoints)
+		point += deltaPos;
+}
+
+
+void Planet::move(Planet& plnt, Vec2& here)
+{
+	plnt.deltaPos = here - plnt.position;	//calculate next position delta
+	plnt.position = here;					//update position
+
+	plnt.updateGravPoints();				//update all gravPoints according to delta
+
+	//plnt.storeGravPoints();				//horrible way of "updating" gravPoints
+}
+
+float Planet::getTick() const
+{
+	return fTicker;
+}
+
 void Planet::update(float fElapsedTime)
 {
 	fTicker += fElapsedTime * 20;
@@ -134,18 +164,8 @@ void Planet::sortGravPoints()
 }
 
 
-void Planet::makeThemGravitate()
-{
-	if (!vGravField.empty())
-		for (int i = 0; i < vGravField.size(); i++)
-			move(*vGravField[i], vGravPoints[fTicker]);
-		
-}
 
-void Planet::move(Planet& plnt, Vec2& here) const
-{
-	plnt.position = here;
-}
+
 
 
 void Planet::showGrav()
