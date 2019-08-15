@@ -8,6 +8,27 @@ void Planet::draw()
 }
 
 
+int Planet::closestGravPointTo(Planet& plnt)
+{
+	float closest = vGravPoints[0].GetLengthSq();
+	float testCase;
+	int result = 0;
+
+
+	for (int i = 0; i < vGravPoints.size(); i++)
+	{
+		testCase = (vGravPoints[i] - plnt.position).GetLengthSq();
+
+		if (testCase < closest) {
+			closest = testCase;
+			result = i;
+		}
+	}
+
+
+	return result;
+}
+
 void Planet::attract(Planet& plnt, Vec2 here, float fElapsedTime)
 {
 	plnt.position += (here - plnt.position).GetNormalized() * fElapsedTime * (position - plnt.position).GetLength() * 0.5f;
@@ -34,8 +55,13 @@ void Planet::interactWithPlanets(float fElapsedTime)
 				break;
 			}
 
-			if (planetInGravField(*plnt))
+
+
+			if (planetInGravField(*plnt)) {
+
+				plnt->fTicker = closestGravPointTo(*plnt);
 				plnt->state = ORBITING;
+			}
 		}
 	
 }

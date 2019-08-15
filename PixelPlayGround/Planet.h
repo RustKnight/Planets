@@ -49,6 +49,7 @@ private:
 
 	void interactWithPlanets(float fElapsedTime);
 
+	int closestGravPointTo(Planet& plnt);
 	void attract(Planet& plnt, Vec2 here, float fElapsedTime);
 	void move(Planet& plnt, Vec2& here);
 	void broadcastGravSzToPlanets();
