@@ -10,7 +10,7 @@ void Planet::draw()
 
 void Planet::attract(Planet& plnt, Vec2 here, float fElapsedTime)
 {
-	plnt.position += (here - plnt.position).GetNormalized() * fElapsedTime * speed;
+	plnt.position += (here - plnt.position).GetNormalized() * fElapsedTime * (position - plnt.position).GetLength() * 0.5f;
 }
 
 void Planet::interactWithPlanets(float fElapsedTime)
@@ -52,7 +52,7 @@ bool Planet::planetInGravField(const Planet& plnt) const
 {
 	// if the distance between small and big is less than the radius of the grav field of puller, return true
 	
-	return ( (position - plnt.position).GetLengthSq() < (Vec2{ GravFieldStrenght, GravFieldStrenght}).GetLengthSq() );
+	return (position - plnt.position).GetLengthSq() < (Vec2{ GravFieldStrenght, GravFieldStrenght}).GetLengthSq();
 
 }
 
