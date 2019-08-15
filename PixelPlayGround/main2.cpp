@@ -41,6 +41,10 @@ public:
 		Clear(olc::BLACK);
 
 
+		if (GetKey(olc::O).bPressed)
+			vTotalPlanets[0]->modFieldStr(-5);
+		if (GetKey(olc::P).bPressed)
+			vTotalPlanets[0]->modFieldStr(5);
 
 		
 		for (Planet* plnt : vTotalPlanets) {

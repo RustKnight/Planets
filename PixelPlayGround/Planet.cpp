@@ -42,30 +42,35 @@ void Planet::interactWithPlanets(float fElapsedTime)
 
 			switch (plnt->state) {
 
-			case STABLE:
+
+			case STABLE:		
+				plnt->state = PULLED;
+				break;
+
+
+			case PULLED:
+
+				if (planetInGravField(*plnt)) {
+					plnt->fTicker = closestGravPointTo(*plnt);
+					plnt->state = ORBITING;
+					break;
+				}		
 				attract(*plnt, position, fElapsedTime);	//pull
 				break;
 
-			case PULLED:
-				move(*plnt, vGravPoints[plnt->getTick()]);
-				break;
 
 			case ORBITING:
 				move(*plnt, vGravPoints[plnt->getTick()]);
 				break;
 			}
 
-
-
-			if (planetInGravField(*plnt)) {
-
-				plnt->fTicker = closestGravPointTo(*plnt);
-				plnt->state = ORBITING;
-			}
+	
 		}
 	
 }
-
+// why is planetInGravField() considering planet is inside Gravfield if we expand it ? false representation of gravField?
+// this is why planets get stuck if we expand with planetInGravField outside the switch case: 
+		// they constantly pass the test that they are in field and get allocated to the closest GravField point
 
 
 void Planet::updateGravPoints()
@@ -97,13 +102,16 @@ void Planet::move(Planet& plnt, Vec2& here)
 
 
 	//plnt.storeGravPoints();				//horrible way of "updating" gravPoints
+	cout << plnt.fTicker << endl;
 }
 
 void Planet::broadcastGravSzToPlanets()
 {
 	if (!vOrbitingPlanets.empty())
-		for (Planet* plnt : vOrbitingPlanets)
+		for (Planet* plnt : vOrbitingPlanets) {
 			plnt->GravFieldSize = vGravPoints.size();
+			plnt->fTicker = closestGravPointTo(*plnt);	// if we change the GravFieldSize we also need to me sure the current Ticker of each small planet is not stuck with its old ticker value, which could be bigger than the entire newGravField size
+		}
 }
 
 float Planet::getTick() const
@@ -269,6 +277,12 @@ void Planet::showGrav()
 			else d += 4 * (x0++ - y0--) + 10;
 		}
 	
+}
+
+void Planet::modFieldStr(int mod)
+{
+	GravFieldStrenght += mod;
+	storeGravPoints();
 }
 
 void Planet::attachPlanet(Planet& plnt)

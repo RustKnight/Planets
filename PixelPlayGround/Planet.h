@@ -10,6 +10,11 @@ using namespace std;
 // and orbit around it
 
 
+// BUG FIX
+
+// when readjusting undeployed planet size, it's grav field does not adjust its size as it should
+	// if starting with different planet size, planetInGravField() does not work properly
+
 
 
 class Planet {
@@ -38,6 +43,7 @@ public:
 	void deploy();	
 	void showGrav();
 	enum State {STABLE, PULLED, ORBITING};
+	void modFieldStr(int mod);
 
 	void attachPlanet(Planet& plnt);
 
