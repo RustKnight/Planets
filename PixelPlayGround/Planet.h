@@ -22,7 +22,9 @@ public:
 		color	{ color}, 
 		state	{STABLE}, 
 		deployed{false}, 
-		fTicker {1.0f}
+		fTicker {1.0f},
+		GravFieldSize {0}
+
 	{}
 
 public:
@@ -45,6 +47,7 @@ private:
 
 	void makeThemGravitate();
 	void move(Planet& plnt, Vec2& here);
+	void broadcastGravSzToPlanets();
 	float getTick() const;
 
 private:
@@ -56,6 +59,7 @@ private:
 	State state;
 	vector<Planet*>vGravField;
 	vector<Vec2>vGravPoints;
+	int GravFieldSize;
 	float fTicker;
 
 	bool deployed;

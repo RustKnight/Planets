@@ -4,6 +4,7 @@
 void Planet::draw()
 {
 	pge.FillCircle(position.x, position.y, radius, color);
+	showGrav();
 }
 
 
@@ -23,12 +24,23 @@ void Planet::updateGravPoints()
 
 void Planet::move(Planet& plnt, Vec2& here)
 {
+	// move should actually make the planet move from its position to the Vec2 position
+
+
 	plnt.deltaPos = here - plnt.position;	//calculate next position delta
 	plnt.position = here;					//update position
 
 	plnt.updateGravPoints();				//update all gravPoints according to delta
 
+
 	//plnt.storeGravPoints();				//horrible way of "updating" gravPoints
+}
+
+void Planet::broadcastGravSzToPlanets()
+{
+	if (!vGravField.empty())
+		for (Planet* plnt : vGravField)
+			plnt->GravFieldSize = vGravPoints.size();
 }
 
 float Planet::getTick() const
@@ -40,7 +52,7 @@ void Planet::update(float fElapsedTime)
 {
 	fTicker += fElapsedTime * 20;
 
-	if (fTicker >= vGravPoints.size())
+	if (fTicker >= GravFieldSize)
 		fTicker = 0.0f;
 
 	makeThemGravitate();
@@ -67,6 +79,9 @@ void Planet::deploy()
 
 void Planet::storeGravPoints()
 {
+	if (!vGravPoints.empty())		// if for some reason we need to recalculate the whole thing -> delete all and make a clean start
+		vGravPoints.clear();
+
 
 	int x0 = 0;
 	int y0 = radius + radius * 2.0f;
@@ -89,6 +104,7 @@ void Planet::storeGravPoints()
 	}
 
 	sortGravPoints();
+	broadcastGravSzToPlanets();
 }
 
 void Planet::sortGravPoints()
@@ -195,6 +211,7 @@ void Planet::showGrav()
 void Planet::attachPlanet(Planet& plnt)
 {
 	vGravField.push_back(&plnt);
+	broadcastGravSzToPlanets();
 }
 
 void Planet::followMouse()
