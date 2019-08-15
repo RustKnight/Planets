@@ -4,7 +4,7 @@
 void Planet::draw()
 {
 	pge.FillCircle(position.x, position.y, radius, color);
-	//showGrav();
+	showGrav();
 }
 
 
@@ -33,6 +33,9 @@ void Planet::interactWithPlanets(float fElapsedTime)
 				move(*plnt, vGravPoints[plnt->getTick()]);
 				break;
 			}
+
+			if (planetInGravField(*plnt))
+				plnt->state = ORBITING;
 		}
 	
 }
@@ -43,6 +46,14 @@ void Planet::updateGravPoints()
 {
 	for (Vec2& point : vGravPoints)
 		point += deltaPos;
+}
+
+bool Planet::planetInGravField(const Planet& plnt) const
+{
+	// if the distance between small and big is less than the radius of the grav field of puller, return true
+	
+	return ( (position - plnt.position).GetLengthSq() < (Vec2{ GravFieldStrenght, GravFieldStrenght}).GetLengthSq() );
+
 }
 
 
@@ -110,7 +121,7 @@ void Planet::storeGravPoints()
 
 
 	int x0 = 0;
-	int y0 = radius + radius * 2.0f;
+	int y0 = radius + GravFieldStrenght;
 	int d = 3 - 2 * radius;
 	if (!radius) return;
 
@@ -214,7 +225,7 @@ void Planet::showGrav()
 {
 	
 		int x0 = 0;
-		int y0 = radius + radius * 2.0f;
+		int y0 = radius + GravFieldStrenght;
 		int d = 3 - 2 * radius;
 		if (!radius) return;
 

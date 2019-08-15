@@ -24,7 +24,8 @@ public:
 		deployed{false}, 
 		fTicker {1.0f},
 		GravFieldSize {0},
-		speed {20.0f}
+		speed {20.0f},
+		GravFieldStrenght { radius * 2.0f }
 	{}
 
 public:
@@ -44,6 +45,7 @@ private:
 	void storeGravPoints();
 	void sortGravPoints();
 	void updateGravPoints();
+	bool planetInGravField(const Planet& plnt) const;
 
 	void interactWithPlanets(float fElapsedTime);
 
@@ -62,6 +64,7 @@ private:
 	vector<Planet*>vOrbitingPlanets;
 	vector<Vec2>vGravPoints;
 	int GravFieldSize;
+	float GravFieldStrenght;
 	float fTicker;
 	float speed;
 
