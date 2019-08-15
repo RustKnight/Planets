@@ -83,8 +83,9 @@ bool Planet::planetInGravField(const Planet& plnt) const
 {
 	// if the distance between small and big is less than the radius of the grav field of puller, return true
 	
-	return (position - plnt.position).GetLengthSq() < (Vec2{ GravFieldStrenght, GravFieldStrenght}).GetLengthSq();
+	return (position - plnt.position).GetLengthSq() < (Vec2{ 0, GravFieldStrenght + radius}).GetLengthSq();
 
+	
 }
 
 
@@ -102,7 +103,6 @@ void Planet::move(Planet& plnt, Vec2& here)
 
 
 	//plnt.storeGravPoints();				//horrible way of "updating" gravPoints
-	cout << plnt.fTicker << endl;
 }
 
 void Planet::broadcastGravSzToPlanets()
@@ -135,6 +135,7 @@ void Planet::update(float fElapsedTime)
 void Planet::modifySize(int mod)
 {
 	radius += mod;
+	GravFieldStrenght = radius * 1.5f;
 }
 
 bool Planet::isDeployed() const
@@ -156,7 +157,7 @@ void Planet::storeGravPoints()
 
 	int x0 = 0;
 	int y0 = radius + GravFieldStrenght;
-	int d = 3 - 2 * radius;
+	int d = 3 - 2 * (radius + GravFieldStrenght);
 	if (!radius) return;
 
 	while (y0 >= x0) // only formulate 1/8 of circle
@@ -260,7 +261,7 @@ void Planet::showGrav()
 	
 		int x0 = 0;
 		int y0 = radius + GravFieldStrenght;
-		int d = 3 - 2 * radius;
+		int d = 3 - 2 * (radius + GravFieldStrenght);
 		if (!radius) return;
 
 		while (y0 >= x0) // only formulate 1/8 of circle

@@ -30,7 +30,7 @@ public:
 		fTicker {1.0f},
 		GravFieldSize {0},
 		speed {20.0f},
-		GravFieldStrenght { radius * 2.0f }
+		GravFieldStrenght { (float)radius * 1.5f}
 	{}
 
 public:
