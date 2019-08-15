@@ -57,7 +57,7 @@ private:
 	olc::Pixel color;
 	olc::PixelGameEngine& pge;
 	State state;
-	vector<Planet*>vGravField;
+	vector<Planet*>vOrbitingPlanets;
 	vector<Vec2>vGravPoints;
 	int GravFieldSize;
 	float fTicker;

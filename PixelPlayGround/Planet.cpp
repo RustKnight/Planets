@@ -10,9 +10,11 @@ void Planet::draw()
 
 void Planet::makeThemGravitate()
 {
-	if (!vGravField.empty())
-		for (int i = 0; i < vGravField.size(); i++)
-			move(*vGravField[i], vGravPoints[vGravField[i]->getTick()]);
+
+	if (!vOrbitingPlanets.empty())
+		for (Planet* plnt : vOrbitingPlanets)
+			move(*plnt, vGravPoints[plnt->getTick()] );
+			
 }
 
 void Planet::updateGravPoints()
@@ -38,8 +40,8 @@ void Planet::move(Planet& plnt, Vec2& here)
 
 void Planet::broadcastGravSzToPlanets()
 {
-	if (!vGravField.empty())
-		for (Planet* plnt : vGravField)
+	if (!vOrbitingPlanets.empty())
+		for (Planet* plnt : vOrbitingPlanets)
 			plnt->GravFieldSize = vGravPoints.size();
 }
 
@@ -210,7 +212,7 @@ void Planet::showGrav()
 
 void Planet::attachPlanet(Planet& plnt)
 {
-	vGravField.push_back(&plnt);
+	vOrbitingPlanets.push_back(&plnt);
 	broadcastGravSzToPlanets();
 }
 
