@@ -4,24 +4,48 @@
 void Planet::draw()
 {
 	pge.FillCircle(position.x, position.y, radius, color);
-	showGrav();
+	//showGrav();
 }
 
 
-void Planet::makeThemGravitate()
+void Planet::attract(Planet& plnt, Vec2 here, float fElapsedTime)
+{
+	plnt.position += (here - plnt.position).GetNormalized() * fElapsedTime * speed;
+}
+
+void Planet::interactWithPlanets(float fElapsedTime)
 {
 
-	if (!vOrbitingPlanets.empty())
-		for (Planet* plnt : vOrbitingPlanets)
-			move(*plnt, vGravPoints[plnt->getTick()] );
-			
+	if (!vOrbitingPlanets.empty()) 
+		for (Planet* plnt : vOrbitingPlanets) {
+
+			switch (plnt->state) {
+
+			case STABLE:
+				attract(*plnt, position, fElapsedTime);	//pull
+				break;
+
+			case PULLED:
+				move(*plnt, vGravPoints[plnt->getTick()]);
+				break;
+
+			case ORBITING:
+				move(*plnt, vGravPoints[plnt->getTick()]);
+				break;
+			}
+		}
+	
 }
+
+
 
 void Planet::updateGravPoints()
 {
 	for (Vec2& point : vGravPoints)
 		point += deltaPos;
 }
+
+
 
 
 void Planet::move(Planet& plnt, Vec2& here)
@@ -52,12 +76,12 @@ float Planet::getTick() const
 
 void Planet::update(float fElapsedTime)
 {
-	fTicker += fElapsedTime * 20;
+	fTicker += fElapsedTime * speed;
 
 	if (fTicker >= GravFieldSize)
 		fTicker = 0.0f;
 
-	makeThemGravitate();
+	interactWithPlanets(fElapsedTime);
 
 	//string s = to_string(fTicker);
 	//pge.DrawString(5, 5, s, olc::WHITE, 1);

@@ -23,8 +23,8 @@ public:
 		state	{STABLE}, 
 		deployed{false}, 
 		fTicker {1.0f},
-		GravFieldSize {0}
-
+		GravFieldSize {0},
+		speed {20.0f}
 	{}
 
 public:
@@ -36,7 +36,7 @@ public:
 	bool isDeployed() const;
 	void deploy();	
 	void showGrav();
-	enum State {STABLE, ORBITING};
+	enum State {STABLE, PULLED, ORBITING};
 
 	void attachPlanet(Planet& plnt);
 
@@ -45,11 +45,13 @@ private:
 	void sortGravPoints();
 	void updateGravPoints();
 
-	void makeThemGravitate();
+	void interactWithPlanets(float fElapsedTime);
+
+	void attract(Planet& plnt, Vec2 here, float fElapsedTime);
 	void move(Planet& plnt, Vec2& here);
 	void broadcastGravSzToPlanets();
 	float getTick() const;
-
+	
 private:
 	int radius;
 	Vec2 position;
@@ -61,6 +63,7 @@ private:
 	vector<Vec2>vGravPoints;
 	int GravFieldSize;
 	float fTicker;
+	float speed;
 
 	bool deployed;
 };
