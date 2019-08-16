@@ -41,6 +41,7 @@ public:
 	void showGrav();
 	enum State {STABLE, PULLED, ORBITING};
 	void modFieldStr(int mod);
+	int getRadius() const;
 
 	void attachPlanet(Planet& plnt);
 	void detachPlanet(int index);

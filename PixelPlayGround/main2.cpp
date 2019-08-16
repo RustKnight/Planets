@@ -55,21 +55,34 @@ public:
 		if (GetKey(olc::N).bPressed)
 			attachIndex--;
 
-	
+		if (GetKey(olc::G).bPressed)
+			showGravity = !showGravity;
+
+		if (GetKey(olc::SPACE).bPressed)
+			attachToBiggest = !attachToBiggest;
 
 		DrawString(5, 5, to_string(attachIndex), olc::YELLOW, 1);
 		
-		//for (Planet* plnt : vTotalPlanets) {
-		//	plnt->update(fElapsedTime);
-		//	plnt->draw();
-		//}
+
+
+		for (int i = 0; i < vTotalPlanets.size(); i++)
+			if (showGravity)
+				vTotalPlanets[i]->showGrav();
 
 		for (int i = 0; i < vTotalPlanets.size(); i++)
 		{
-			//if (i == 0) continue;
 			vTotalPlanets[i]->update(fElapsedTime);
 			vTotalPlanets[i]->draw();
 		}
+
+		
+		
+	
+
+		if (attachToBiggest)
+			FillRect(5, 20, 5, 5, olc::GREY);
+		else
+			FillRect(5, 20, 5, 5, olc::YELLOW);
 	
 		checkMouse();
 
@@ -82,13 +95,16 @@ public:
 	void checkMouse();
 	bool allPlanetsDeployed();
 	Planet& getUndeployedPlanet();
-
-
+	bool isSmaller();
+	Planet& getBiggest();
+	Planet& getPreviousBiggest();
 
 	// DEMO Data Members
 private:
 	vector<Planet*> vTotalPlanets;
 	int attachIndex = 0;
+	bool showGravity = false;
+	bool attachToBiggest = true;
 };
 
 
@@ -121,7 +137,7 @@ int main() {
 
 
 	Demo demo;
-	if (demo.Construct(256, 240, 4, 4))
+	if (demo.Construct(400, 400, 4, 4))
 		demo.Start();
 
 
@@ -172,7 +188,19 @@ void Demo::checkMouse()
 			if (vTotalPlanets.size() > 1) {			
 
 				Planet& last_created_planet = *vTotalPlanets[vTotalPlanets.size() - 1];
-				vTotalPlanets[attachIndex]->attachPlanet(last_created_planet);
+
+
+				if (attachToBiggest) {
+						// if newly created planet is smaller than any of current planets, go to biggest
+					if (isSmaller())
+						getBiggest().attachPlanet(last_created_planet);
+					else
+						last_created_planet.attachPlanet(getPreviousBiggest());
+						// if newly created planet is bigger than all current planets, attach next smallest planet to it
+				}
+
+				else
+					vTotalPlanets[attachIndex]->attachPlanet(last_created_planet);
 			}
 		}
 	}
@@ -195,4 +223,48 @@ Planet& Demo::getUndeployedPlanet()
 
 
 	//WARNING: RETURN CONTROL PATH SHOULD BE FULLY IMPLEMENTED
+}
+
+bool Demo::isSmaller()
+{
+
+	Planet& testedPlanet = *vTotalPlanets[vTotalPlanets.size() - 1];
+	bool result = false;
+
+	for (int i = 0; i < vTotalPlanets.size() - 1; i++)		//test all but the last one
+	{
+		if (vTotalPlanets[i]->getRadius() >= testedPlanet.getRadius())
+			return true;
+	}
+
+	return result;
+}
+
+Planet & Demo::getBiggest()
+{
+
+	Planet* biggest = vTotalPlanets[0];
+
+	for (int i = 0; i < vTotalPlanets.size(); i++)		
+	{
+		if (vTotalPlanets[i]->getRadius() > biggest->getRadius())
+			biggest = vTotalPlanets[i];
+	}
+
+	return *biggest;
+}
+
+Planet & Demo::getPreviousBiggest()
+{
+
+	Planet* biggest = vTotalPlanets[0];
+
+	for (int i = 0; i < vTotalPlanets.size() - 1; i++)		//get second biggest
+	{
+		if (vTotalPlanets[i]->getRadius() > biggest->getRadius())
+			biggest = vTotalPlanets[i];
+	}
+
+	return *biggest;
+	
 }

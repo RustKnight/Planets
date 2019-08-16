@@ -4,7 +4,6 @@
 void Planet::draw()
 {
 	pge.FillCircle(position.x, position.y, radius, color);
-	//showGrav();
 }
 
 
@@ -275,6 +274,11 @@ void Planet::modFieldStr(int mod)
 	storeGravPoints();
 }
 
+int Planet::getRadius() const
+{
+	return radius;
+}
+
 void Planet::attachPlanet(Planet& plnt)
 {
 	vOrbitingPlanets.push_back(&plnt);
@@ -289,7 +293,6 @@ void Planet::detachPlanet(int index)
 
 void Planet::followMouse()
 {
-	cout << "Before " << position.x << " " << position.y << endl;
 	position = Vec2{ float(pge.GetMouseX() - 10), float(pge.GetMouseY() - 10) };
-	cout << "After " << position.x << " " << position.y << endl;
+
 }
