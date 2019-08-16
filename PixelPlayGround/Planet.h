@@ -11,7 +11,7 @@ using namespace std;
 
 
 
-
+//IMPORTANT! when we calculate a GravField, it will be 2 times our radius.
 
 
 class Planet {
@@ -26,8 +26,8 @@ public:
 		deployed{false}, 
 		fTicker {1.0f},
 		GravFieldSize {0},
-		speed {20.0f},
-		GravFieldStrenght { (float)radius * 1.5f}
+		speed {20.0f}, //speed {float(10 + rand() % 20)}
+		GravFieldStrenght { float(radius) }
 	{}
 
 public:
@@ -42,9 +42,13 @@ public:
 	enum State {STABLE, PULLED, ORBITING};
 	void modFieldStr(int mod);
 	int getRadius() const;
+	int getDiameter() const;
 
 	void attachPlanet(Planet& plnt);
 	void detachPlanet(int index);
+
+	//debug
+	void displayRadius();
 
 private:
 	void storeGravPoints();
@@ -59,9 +63,17 @@ private:
 	void move(Planet& plnt, Vec2& here);
 	void broadcastGravSzToPlanets();
 	float getTick() const;
+	void setGravField(int val);
+
+	//recur
+	int getSumAttachedPlanetsRadius(vector<Planet*>& vPlnts, int radius, int recurStep);
+	int getAttachedPlanetsCount(vector<Planet*>& vPlnts);
+
 	
+
 private:
 	int radius;
+	int diameter;
 	Vec2 position;
 	Vec2 deltaPos;
 	olc::Pixel color;

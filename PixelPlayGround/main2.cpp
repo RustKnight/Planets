@@ -54,6 +54,11 @@ public:
 			attachIndex++;
 		if (GetKey(olc::N).bPressed)
 			attachIndex--;
+		if (GetKey(olc::J).bPressed)
+			secondaryControlIndex++;
+		if (GetKey(olc::H).bPressed)
+			secondaryControlIndex--;
+
 
 		if (GetKey(olc::G).bPressed)
 			showGravity = !showGravity;
@@ -62,20 +67,25 @@ public:
 			attachToBiggest = !attachToBiggest;
 
 		DrawString(5, 5, to_string(attachIndex), olc::YELLOW, 1);
+
+		DrawString(20, 5, to_string(secondaryControlIndex), olc::RED, 1);
 		
 
+		if (GetKey(olc::L).bPressed)
+			vTotalPlanets[attachIndex]->modFieldStr(vTotalPlanets[secondaryControlIndex]->getRadius());
 
-		for (int i = 0; i < vTotalPlanets.size(); i++)
-			if (showGravity)
-				vTotalPlanets[i]->showGrav();
+
 
 		for (int i = 0; i < vTotalPlanets.size(); i++)
 		{
 			vTotalPlanets[i]->update(fElapsedTime);
 			vTotalPlanets[i]->draw();
+			vTotalPlanets[i]->displayRadius();
 		}
 
-		
+		for (int i = 0; i < vTotalPlanets.size(); i++)
+			if (showGravity)
+				vTotalPlanets[i]->showGrav();
 		
 	
 
@@ -103,7 +113,8 @@ public:
 private:
 	vector<Planet*> vTotalPlanets;
 	int attachIndex = 0;
-	bool showGravity = false;
+	int secondaryControlIndex = 0;
+	bool showGravity = true;
 	bool attachToBiggest = true;
 };
 

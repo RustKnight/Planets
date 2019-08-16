@@ -71,9 +71,7 @@ void Planet::interactWithPlanets(float fElapsedTime)
 		}
 	
 }
-// why is planetInGravField() considering planet is inside Gravfield if we expand it ? false representation of gravField?
-// this is why planets get stuck if we expand with planetInGravField outside the switch case: 
-		// they constantly pass the test that they are in field and get allocated to the closest GravField point
+
 
 
 void Planet::updateGravPoints()
@@ -87,7 +85,7 @@ bool Planet::planetInGravField(const Planet& plnt) const
 {
 	// if the distance between small and big is less than the radius of the grav field of puller, return true
 	
-	return (position - plnt.position).GetLengthSq() < (Vec2{ 0, GravFieldStrenght + radius}).GetLengthSq();
+	return (position - plnt.position).GetLengthSq() < (Vec2{ 0, GravFieldStrenght}).GetLengthSq();
 
 	
 }
@@ -123,6 +121,8 @@ float Planet::getTick() const
 	return fTicker;
 }
 
+
+
 void Planet::update(float fElapsedTime)
 {
 	fTicker += fElapsedTime * speed;
@@ -132,15 +132,11 @@ void Planet::update(float fElapsedTime)
 
 	interactWithPlanets(fElapsedTime);
 
-	//string s = to_string(fTicker);
-	//pge.DrawString(5, 5, s, olc::WHITE, 1);
 }
 
-void Planet::modifySize(int mod)
-{
-	radius += mod;
-	GravFieldStrenght = radius * 1.5f;
-}
+
+
+
 
 bool Planet::isDeployed() const
 {
@@ -160,8 +156,8 @@ void Planet::storeGravPoints()
 
 
 	int x0 = 0;
-	int y0 = radius + GravFieldStrenght;
-	int d = 3 - 2 * (radius + GravFieldStrenght);
+	int y0 = GravFieldStrenght;
+	int d = 3 - 2 * GravFieldStrenght;
 	if (!radius) return;
 
 	while (y0 >= x0) // only formulate 1/8 of circle
@@ -268,6 +264,43 @@ void Planet::showGrav()
 
 }
 
+void Planet::setGravField(int val)
+{
+	GravFieldStrenght = val;
+	storeGravPoints();
+}
+
+
+
+
+
+int Planet::getAttachedPlanetsCount(vector<Planet*>& vPlnts)
+{
+	if (vPlnts.empty())
+		return 1;
+
+	int holder = 0;
+
+	for (Planet* plnt : vPlnts)
+		holder += getAttachedPlanetsCount(plnt->vOrbitingPlanets);
+
+	return holder + 1;
+}
+
+void Planet::displayRadius()
+{
+	pge.DrawString(position.x - radius / 2, position.y - radius * 2.0f, to_string(radius), olc::RED, 1);
+}
+
+
+
+void Planet::modifySize(int mod)
+{
+	radius += mod;
+	GravFieldStrenght = getRadius();
+	storeGravPoints();
+}
+
 void Planet::modFieldStr(int mod)
 {
 	GravFieldStrenght += mod;
@@ -279,9 +312,40 @@ int Planet::getRadius() const
 	return radius;
 }
 
+int Planet::getDiameter() const
+{
+	return radius * 2;
+}
+
+
+// TODO -> CORRECT calculation of gravField recalculation
+// SPEED tweak of orbiting planets in relation with chain, might fix unesthetic looking rotations
+
+int Planet::getSumAttachedPlanetsRadius(vector<Planet*>& vPlnts, int radius, int recurStep)
+{
+	// enter with 1 and increase recurStep by multiple of 2
+
+	if (vPlnts.empty()) 
+			return radius * recurStep / 2;
+
+	int holder = 0;
+
+	for (Planet* plnt : vPlnts)
+		holder += getSumAttachedPlanetsRadius(plnt->vOrbitingPlanets, plnt->radius, recurStep * 2);
+
+		return holder + radius * recurStep / 2;
+}
+
+
 void Planet::attachPlanet(Planet& plnt)
 {
+
 	vOrbitingPlanets.push_back(&plnt);
+	
+	if (!plnt.vOrbitingPlanets.empty() || vOrbitingPlanets.size() <= 1)
+		setGravField(radius + getSumAttachedPlanetsRadius(vOrbitingPlanets, 0, 1) );
+		
+
 	broadcastGravSzToPlanets();
 }
 
