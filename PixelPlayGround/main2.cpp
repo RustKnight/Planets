@@ -40,16 +40,35 @@ public:
 	{
 		Clear(olc::BLACK);
 
+		if (GetKey(olc::B).bPressed)
+			vTotalPlanets[0]->detachPlanet(attachIndex);
+
 
 		if (GetKey(olc::O).bPressed)
 			vTotalPlanets[0]->modFieldStr(-5);
 		if (GetKey(olc::P).bPressed)
 			vTotalPlanets[0]->modFieldStr(5);
 
+
+		if (GetKey(olc::M).bPressed)
+			attachIndex++;
+		if (GetKey(olc::N).bPressed)
+			attachIndex--;
+
+	
+
+		DrawString(5, 5, to_string(attachIndex), olc::YELLOW, 1);
 		
-		for (Planet* plnt : vTotalPlanets) {
-			plnt->update(fElapsedTime);
-			plnt->draw();
+		//for (Planet* plnt : vTotalPlanets) {
+		//	plnt->update(fElapsedTime);
+		//	plnt->draw();
+		//}
+
+		for (int i = 0; i < vTotalPlanets.size(); i++)
+		{
+			//if (i == 0) continue;
+			vTotalPlanets[i]->update(fElapsedTime);
+			vTotalPlanets[i]->draw();
 		}
 	
 		checkMouse();
@@ -69,6 +88,7 @@ public:
 	// DEMO Data Members
 private:
 	vector<Planet*> vTotalPlanets;
+	int attachIndex = 0;
 };
 
 
@@ -152,7 +172,7 @@ void Demo::checkMouse()
 			if (vTotalPlanets.size() > 1) {			
 
 				Planet& last_created_planet = *vTotalPlanets[vTotalPlanets.size() - 1];
-				vTotalPlanets[0]->attachPlanet(last_created_planet);
+				vTotalPlanets[attachIndex]->attachPlanet(last_created_planet);
 			}
 		}
 	}

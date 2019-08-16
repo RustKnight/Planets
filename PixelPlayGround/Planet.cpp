@@ -4,7 +4,7 @@
 void Planet::draw()
 {
 	pge.FillCircle(position.x, position.y, radius, color);
-	showGrav();
+	//showGrav();
 }
 
 
@@ -31,7 +31,11 @@ int Planet::closestGravPointTo(Planet& plnt)
 
 void Planet::attract(Planet& plnt, Vec2 here, float fElapsedTime)
 {
-	plnt.position += (here - plnt.position).GetNormalized() * fElapsedTime * (position - plnt.position).GetLength() * 0.5f;
+	Vec2 moveHere = (here - plnt.position).GetNormalized() * fElapsedTime * (position - plnt.position).GetLength() * 0.5f;
+	plnt.position += moveHere;
+
+	plnt.deltaPos = moveHere;	//calculate next position delta
+	plnt.updateGravPoints();				//update all gravPoints according to delta
 }
 
 void Planet::interactWithPlanets(float fElapsedTime)
@@ -49,9 +53,9 @@ void Planet::interactWithPlanets(float fElapsedTime)
 
 
 			case PULLED:
-
 				if (planetInGravField(*plnt)) {
 					plnt->fTicker = closestGravPointTo(*plnt);
+					plnt->storeGravPoints();
 					plnt->state = ORBITING;
 					break;
 				}		
@@ -77,6 +81,7 @@ void Planet::updateGravPoints()
 {
 	for (Vec2& point : vGravPoints)
 		point += deltaPos;
+	
 }
 
 bool Planet::planetInGravField(const Planet& plnt) const
@@ -97,11 +102,11 @@ void Planet::move(Planet& plnt, Vec2& here)
 
 
 	plnt.deltaPos = here - plnt.position;	//calculate next position delta
-	plnt.position = here;					//update position
-
 	plnt.updateGravPoints();				//update all gravPoints according to delta
 
+	plnt.position = here;					//update position
 
+	
 	//plnt.storeGravPoints();				//horrible way of "updating" gravPoints
 }
 
@@ -258,26 +263,10 @@ void Planet::sortGravPoints()
 
 void Planet::showGrav()
 {
-	
-		int x0 = 0;
-		int y0 = radius + GravFieldStrenght;
-		int d = 3 - 2 * (radius + GravFieldStrenght);
-		if (!radius) return;
 
-		while (y0 >= x0) // only formulate 1/8 of circle
-		{
-			pge.Draw(position.x + x0, position.y - y0, olc::RED);
-			pge.Draw(position.x + y0, position.y - x0, olc::RED);
-			pge.Draw(position.x + y0, position.y + x0, olc::RED);
-			pge.Draw(position.x + x0, position.y + y0, olc::RED);
-			pge.Draw(position.x - x0, position.y + y0, olc::RED);
-			pge.Draw(position.x - y0, position.y + x0, olc::RED);
-			pge.Draw(position.x - y0, position.y - x0, olc::RED);
-			pge.Draw(position.x - x0, position.y - y0, olc::RED);
-			if (d < 0) d += 4 * x0++ + 6;
-			else d += 4 * (x0++ - y0--) + 10;
-		}
-	
+	for (Vec2& p : vGravPoints)
+		pge.Draw(p.x, p.y, olc::RED);
+
 }
 
 void Planet::modFieldStr(int mod)
@@ -292,7 +281,15 @@ void Planet::attachPlanet(Planet& plnt)
 	broadcastGravSzToPlanets();
 }
 
+void Planet::detachPlanet(int index)
+{
+	vOrbitingPlanets[index-1]->state = STABLE;
+	vOrbitingPlanets.erase(vOrbitingPlanets.begin() + index-1);
+}
+
 void Planet::followMouse()
 {
+	cout << "Before " << position.x << " " << position.y << endl;
 	position = Vec2{ float(pge.GetMouseX() - 10), float(pge.GetMouseY() - 10) };
+	cout << "After " << position.x << " " << position.y << endl;
 }

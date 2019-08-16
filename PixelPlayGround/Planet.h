@@ -10,10 +10,7 @@ using namespace std;
 // and orbit around it
 
 
-// BUG FIX
 
-// when readjusting undeployed planet size, it's grav field does not adjust its size as it should
-	// if starting with different planet size, planetInGravField() does not work properly
 
 
 
@@ -46,6 +43,7 @@ public:
 	void modFieldStr(int mod);
 
 	void attachPlanet(Planet& plnt);
+	void detachPlanet(int index);
 
 private:
 	void storeGravPoints();
