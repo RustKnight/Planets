@@ -274,19 +274,6 @@ void Planet::setGravField(int val)
 
 
 
-int Planet::getAttachedPlanetsCount(vector<Planet*>& vPlnts)
-{
-	if (vPlnts.empty())
-		return 1;
-
-	int holder = 0;
-
-	for (Planet* plnt : vPlnts)
-		holder += getAttachedPlanetsCount(plnt->vOrbitingPlanets);
-
-	return holder + 1;
-}
-
 void Planet::displayRadius()
 {
 	pge.DrawString(position.x - radius / 2, position.y - radius * 2.0f, to_string(radius), olc::RED, 1);
@@ -321,6 +308,37 @@ int Planet::getDiameter() const
 // When planet with plantes is joining, make sure we extend GravField of attracter only by the biggest chained planets value
 // SPEED tweak of orbiting planets in relation with chain, might fix unesthetic looking rotations
 
+int Planet::getAttachedPlanetsCount(vector<Planet*>& vPlnts)
+{
+	if (vPlnts.empty())
+		return 1;
+
+	int holder = 0;
+
+	for (Planet* plnt : vPlnts)
+		holder += getAttachedPlanetsCount(plnt->vOrbitingPlanets);
+
+	return holder + 1;
+}
+
+int Planet::getDeepestChainPlanetCount(vector<Planet*>& vPlnts, int level)
+{
+	if (vPlnts.empty())
+		return level;
+
+		vector<int> holder;
+
+	for (Planet* plnt : vPlnts)	 
+			holder.push_back(getDeepestChainPlanetCount(plnt->vOrbitingPlanets, level + 1));
+			
+	// return biggest value from holder
+	vector<int>::iterator result;
+	result = max_element(holder.begin(), holder.end());
+
+	return *result;
+}
+
+
 int Planet::getSumAttachedPlanetsRadius(vector<Planet*>& vPlnts, int radius, int recurStep)
 {
 	// enter with 1 and increase recurStep by multiple of 2
@@ -341,10 +359,18 @@ void Planet::attachPlanet(Planet& plnt)
 {
 
 	vOrbitingPlanets.push_back(&plnt);
+
+	// Useless piece of code below -> I need recurssion , loops are useless to calculate branch deepness
+	//for (Planet* plnt : vOrbitingPlanets)
+	//	cout << plnt->getSumAttachedPlanetsRadius(plnt->vOrbitingPlanets, 0, 1) << endl;
 	
+	cout << getDeepestChainPlanetCount(vOrbitingPlanets, 0) << endl;
+
+	// If we're attaching a Planet with More Planets OR we have no Planets orbiting, we ADJUST our GravField
 	if (!plnt.vOrbitingPlanets.empty() || vOrbitingPlanets.size() <= 1)
 		setGravField(radius + getSumAttachedPlanetsRadius(vOrbitingPlanets, 0, 1) );
 		
+
 	broadcastGravSzToPlanets();
 }
 

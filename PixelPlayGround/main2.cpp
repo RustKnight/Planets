@@ -96,7 +96,7 @@ public:
 		{
 			vTotalPlanets[i]->update(fElapsedTime);
 			vTotalPlanets[i]->draw();
-			//vTotalPlanets[i]->displayRadius();			
+			vTotalPlanets[i]->displayRadius();			
 		}
 
 

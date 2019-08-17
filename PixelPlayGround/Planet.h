@@ -67,6 +67,7 @@ private:
 	//recur
 	int getSumAttachedPlanetsRadius(vector<Planet*>& vPlnts, int radius, int recurStep);
 	int getAttachedPlanetsCount(vector<Planet*>& vPlnts);
+	int getDeepestChainPlanetCount(vector<Planet*>& vPlnts, int level);
 
 	
 
