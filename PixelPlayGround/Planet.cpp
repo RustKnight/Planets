@@ -318,7 +318,7 @@ int Planet::getDiameter() const
 }
 
 
-// TODO -> CORRECT calculation of gravField recalculation
+// When planet with plantes is joining, make sure we extend GravField of attracter only by the biggest chained planets value
 // SPEED tweak of orbiting planets in relation with chain, might fix unesthetic looking rotations
 
 int Planet::getSumAttachedPlanetsRadius(vector<Planet*>& vPlnts, int radius, int recurStep)
@@ -345,18 +345,12 @@ void Planet::attachPlanet(Planet& plnt)
 	if (!plnt.vOrbitingPlanets.empty() || vOrbitingPlanets.size() <= 1)
 		setGravField(radius + getSumAttachedPlanetsRadius(vOrbitingPlanets, 0, 1) );
 		
-
 	broadcastGravSzToPlanets();
 }
 
-void Planet::detachPlanet(int index)
-{
-	vOrbitingPlanets[index-1]->state = STABLE;
-	vOrbitingPlanets.erase(vOrbitingPlanets.begin() + index-1);
-}
+
 
 void Planet::followMouse()
 {
 	position = Vec2{ float(pge.GetMouseX() - 10), float(pge.GetMouseY() - 10) };
-
 }

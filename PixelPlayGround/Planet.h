@@ -45,7 +45,6 @@ public:
 	int getDiameter() const;
 
 	void attachPlanet(Planet& plnt);
-	void detachPlanet(int index);
 
 	//debug
 	void displayRadius();

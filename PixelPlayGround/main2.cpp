@@ -9,7 +9,7 @@
 
 using namespace std;
 
-
+// Do not take refrences or pointers to Vector Elements -> these elements are prone to change their memeory address, leaving you with an invalid pointer
 
 class Demo : public olc::PixelGameEngine
 {
@@ -40,60 +40,67 @@ public:
 	{
 		Clear(olc::BLACK);
 
-		if (GetKey(olc::B).bPressed)
-			vTotalPlanets[0]->detachPlanet(attachIndex);
+		//Debug
+			
+			//Control Index display
+			DrawString(5, 5, to_string(controlIndex1), olc::YELLOW, 1);
+			DrawString(20, 5, to_string(controlIndex2), olc::RED, 1);
+
+			// G key to Show/Hide Grav Field
+			if (GetKey(olc::G).bPressed)
+				showGravity = !showGravity;
+
+			// Display small square to show which Attach-Mode we're in
+			if (attachToBiggest)
+				FillRect(5, 20, 5, 5, olc::GREY);
+			else
+				FillRect(5, 20, 5, 5, olc::YELLOW);
+
+			// Change attach-mode rules;
+			if (GetKey(olc::SPACE).bPressed)
+				attachToBiggest = !attachToBiggest;
+
+			// Displays gravitity Field
+			if (showGravity)
+				for (Planet* plnt : vTotalPlanets)
+					plnt->showGrav();
 
 
-		if (GetKey(olc::O).bPressed)
-			vTotalPlanets[0]->modFieldStr(-5);
-		if (GetKey(olc::P).bPressed)
-			vTotalPlanets[0]->modFieldStr(5);
-
-
+		//	Selects which planet we want to manipulate
+			// N- M+ for controlIndex1 selection
+			// J- H+ for controlIndex2 selection
 		if (GetKey(olc::M).bPressed)
-			attachIndex++;
+			controlIndex1++;
 		if (GetKey(olc::N).bPressed)
-			attachIndex--;
+			controlIndex1--;		
 		if (GetKey(olc::J).bPressed)
-			secondaryControlIndex++;
+			controlIndex2++;
 		if (GetKey(olc::H).bPressed)
-			secondaryControlIndex--;
+			controlIndex2--;
 
 
-		if (GetKey(olc::G).bPressed)
-			showGravity = !showGravity;
-
-		if (GetKey(olc::SPACE).bPressed)
-			attachToBiggest = !attachToBiggest;
-
-		DrawString(5, 5, to_string(attachIndex), olc::YELLOW, 1);
-
-		DrawString(20, 5, to_string(secondaryControlIndex), olc::RED, 1);
-		
-
+		// L key to add the GravField value of Planet[ControlIndex2] to GravField of Planet[ControlIndex1]
 		if (GetKey(olc::L).bPressed)
-			vTotalPlanets[attachIndex]->modFieldStr(vTotalPlanets[secondaryControlIndex]->getRadius());
+			vTotalPlanets[controlIndex1]->modFieldStr(vTotalPlanets[controlIndex2]->getRadius());
 
 
+		// O- P+ to increase or decrease GravField of selected controlIndex1 Planet
+		if (GetKey(olc::O).bPressed)
+			vTotalPlanets[controlIndex1]->modFieldStr(-5);
+		if (GetKey(olc::P).bPressed)
+			vTotalPlanets[controlIndex1]->modFieldStr(5);
 
+
+		// Draw gravField first, update plantes, draw planets
 		for (int i = 0; i < vTotalPlanets.size(); i++)
 		{
 			vTotalPlanets[i]->update(fElapsedTime);
 			vTotalPlanets[i]->draw();
-			vTotalPlanets[i]->displayRadius();
+			//vTotalPlanets[i]->displayRadius();			
 		}
 
-		for (int i = 0; i < vTotalPlanets.size(); i++)
-			if (showGravity)
-				vTotalPlanets[i]->showGrav();
-		
-	
 
-		if (attachToBiggest)
-			FillRect(5, 20, 5, 5, olc::GREY);
-		else
-			FillRect(5, 20, 5, 5, olc::YELLOW);
-	
+		// Control creation process of Planets and attach rules
 		checkMouse();
 
 
@@ -112,22 +119,11 @@ public:
 	// DEMO Data Members
 private:
 	vector<Planet*> vTotalPlanets;
-	int attachIndex = 0;
-	int secondaryControlIndex = 0;
+	int controlIndex1 = 0;
+	int controlIndex2 = 0;
 	bool showGravity = true;
 	bool attachToBiggest = true;
 };
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -165,33 +161,31 @@ void Demo::createPlanet()
 void Demo::checkMouse()
 {
 
-	// no planet ON MOUSE and we just pressed RIGHT CLICK 
-	if (GetMouse(1).bPressed && allPlanetsDeployed()) {
+	// No planet ON MOUSE and we just pressed RIGHT CLICK 
+	if (GetMouse(1).bPressed && allPlanetsDeployed()) 
 		createPlanet();
-	}
+	
 
 	// Planet ON MOUSE and is ready for DEPLOY
+	// In this phase we can resize the planet and move it around
 	else if (!allPlanetsDeployed()) {
 
 		Planet& plnt = getUndeployedPlanet();
-
+	
 		switch (GetMouseWheel()) {
 
 			case 120:
 				plnt.modifySize(+1);
 				break;
-
 			case -120:
 				plnt.modifySize(-1);
 				break;
-
 			default:
 				break;
 		}
 
 		plnt.followMouse();
-
-		
+	
 		if (GetMouse(1).bPressed) {		// deploy planet and attach to first created planet, if we have more than one planet deployed...
 
 			plnt.deploy();
@@ -200,18 +194,18 @@ void Demo::checkMouse()
 
 				Planet& last_created_planet = *vTotalPlanets[vTotalPlanets.size() - 1];
 
-
 				if (attachToBiggest) {
-						// if newly created planet is smaller than any of current planets, go to biggest
+					
+					// if newly created planet is smaller than current planets, go to biggest
 					if (isSmaller())
 						getBiggest().attachPlanet(last_created_planet);
+					
+					// if newly created planet is bigger than all current planets, attach next smallest planet to it
 					else
-						last_created_planet.attachPlanet(getPreviousBiggest());
-						// if newly created planet is bigger than all current planets, attach next smallest planet to it
+						last_created_planet.attachPlanet(getPreviousBiggest());					
 				}
-
 				else
-					vTotalPlanets[attachIndex]->attachPlanet(last_created_planet);
+					vTotalPlanets[controlIndex1]->attachPlanet(last_created_planet);
 			}
 		}
 	}
