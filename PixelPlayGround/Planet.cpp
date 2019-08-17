@@ -67,7 +67,6 @@ void Planet::interactWithPlanets(float fElapsedTime)
 				break;
 			}
 
-	
 		}
 	
 }
@@ -274,6 +273,7 @@ void Planet::setGravField(int val)
 
 
 
+
 void Planet::displayRadius()
 {
 	pge.DrawString(position.x - radius / 2, position.y - radius * 2.0f, to_string(radius), olc::RED, 1);
@@ -302,6 +302,11 @@ int Planet::getRadius() const
 int Planet::getDiameter() const
 {
 	return radius * 2;
+}
+
+bool Planet::isStable() const
+{
+	return state == STABLE;
 }
 
 
@@ -339,41 +344,46 @@ int Planet::getDeepestChainPlanetCount(vector<Planet*>& vPlnts, int level)
 }
 
 
-int Planet::getSumAttachedPlanetsRadius(vector<Planet*>& vPlnts, int radius, int recurStep)
+int Planet::mysteriousCalculation(vector<Planet*>& vPlnts, int radius, int recurStep)
 {
 	// enter with 1 and increase recurStep by multiple of 2
 
 	if (vPlnts.empty()) 
 			return radius * recurStep / 2;
 
-	int holder = 0;
+	vector<int> holder;
 
 	for (Planet* plnt : vPlnts)
-		holder += getSumAttachedPlanetsRadius(plnt->vOrbitingPlanets, plnt->radius, recurStep * 2);
+		holder.push_back (mysteriousCalculation(plnt->vOrbitingPlanets, plnt->radius, recurStep * 2) );
 
-		return holder + radius * recurStep / 2;
+	vector<int>::iterator result;
+	result = max_element(holder.begin(), holder.end());
+
+	return *result + radius * recurStep / 2;
 }
 
 
 void Planet::attachPlanet(Planet& plnt)
 {
 
+	int incomingPlanetGravFieldSpaceNeeds = plnt.radius + plnt.mysteriousCalculation(plnt.vOrbitingPlanets, 0, 1);
+	int currentGravFieldAccomodation = mysteriousCalculation(vOrbitingPlanets, 0, 1);	
+	
 	vOrbitingPlanets.push_back(&plnt);
 
-	// Useless piece of code below -> I need recurssion , loops are useless to calculate branch deepness
-	//for (Planet* plnt : vOrbitingPlanets)
-	//	cout << plnt->getSumAttachedPlanetsRadius(plnt->vOrbitingPlanets, 0, 1) << endl;
-	
-	cout << getDeepestChainPlanetCount(vOrbitingPlanets, 0) << endl;
 
-	// If we're attaching a Planet with More Planets OR we have no Planets orbiting, we ADJUST our GravField
-	if (!plnt.vOrbitingPlanets.empty() || vOrbitingPlanets.size() <= 1)
-		setGravField(radius + getSumAttachedPlanetsRadius(vOrbitingPlanets, 0, 1) );
+	if (currentGravFieldAccomodation < incomingPlanetGravFieldSpaceNeeds)
+		setGravField(radius + mysteriousCalculation(vOrbitingPlanets, 0, 1) );
 		
 
 	broadcastGravSzToPlanets();
 }
 
+void Planet::recalculateGravField()
+{
+	setGravField(radius + mysteriousCalculation(vOrbitingPlanets, 0, 1));
+	broadcastGravSzToPlanets();
+}
 
 
 void Planet::followMouse()

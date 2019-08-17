@@ -204,8 +204,14 @@ void Demo::checkMouse()
 					else
 						last_created_planet.attachPlanet(getPreviousBiggest());					
 				}
-				else
+				else {
+
 					vTotalPlanets[controlIndex1]->attachPlanet(last_created_planet);
+
+					for (Planet* plnt : vTotalPlanets)
+						if (plnt->isStable())
+							plnt->recalculateGravField();
+				}
 			}
 		}
 	}

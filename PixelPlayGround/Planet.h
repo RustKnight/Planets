@@ -10,9 +10,10 @@ using namespace std;
 // and orbit around it
 
 
+// Maybe add a feature where you stop all planets, and allign them from top outer rim to center, that all planets are on they most south side
 
 //IMPORTANT! when we calculate a GravField, it will be 2 times our radius.
-
+// Bug, if deploying planets in alternative modes program crashes : currently it's better to stick to standard-auto mode.
 
 class Planet {
 public:
@@ -43,6 +44,8 @@ public:
 	void modFieldStr(int mod);
 	int getRadius() const;
 	int getDiameter() const;
+	bool isStable() const;
+	void recalculateGravField();
 
 	void attachPlanet(Planet& plnt);
 
@@ -65,7 +68,7 @@ private:
 	void setGravField(int val);
 
 	//recur
-	int getSumAttachedPlanetsRadius(vector<Planet*>& vPlnts, int radius, int recurStep);
+	int mysteriousCalculation(vector<Planet*>& vPlnts, int radius, int recurStep);
 	int getAttachedPlanetsCount(vector<Planet*>& vPlnts);
 	int getDeepestChainPlanetCount(vector<Planet*>& vPlnts, int level);
 
