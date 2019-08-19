@@ -10,7 +10,19 @@ using namespace std;
 // and orbit around it
 
 
-// Maybe add a feature where you stop all planets, and allign them from top outer rim to center, that all planets are on they most south side
+// Maybe add a feature where you stop all planets, and allign them from top outer rim to center, that all planets are on their most south side
+	// one way to implement, is to let it rotate, and always check if current Y position is equal to the toppest point with respect to screen, if so, so top internal Ticker
+	// recurrsive stop = give order to stable planet to change state of longestChain Planet to stop at TOP
+			// when it stops, gives further order down to stop at their bigger planet most BOTTOM rim until the last planet
+				// maybe a check to see if we're stable, if so it means the next planet needs to go to top - if we're obiting, we need to stop at bottom
+			// Bonus - see if there is an easy way to elegantly reduce speed when approaching to a stop
+
+
+// Possible feature: after determining the GravField size, make a gradual expansion until it hits its established limit.
+	// it can be as smooth as attract() 
+
+// add a global resize function for all planets and place Stable planet in center (maybe by mouse scroll resize)
+
 
 //IMPORTANT! when we calculate a GravField, it will be 2 times our radius.
 // Bug, if deploying planets in alternative modes program crashes : currently it's better to stick to standard-auto mode.
@@ -26,9 +38,9 @@ public:
 		state	{STABLE}, 
 		deployed{false}, 
 		fTicker {1.0f},
-		GravFieldSize {0},
+		gravFieldTotalPointsOfBigger {0},
 		speed {20.0f}, //speed {float(10 + rand() % 20)}
-		GravFieldStrenght { float(radius) }
+		gravFieldStrenght { float(radius) }
 	{}
 
 public:
@@ -45,7 +57,7 @@ public:
 	int getRadius() const;
 	int getDiameter() const;
 	bool isStable() const;
-	void recalculateGravField();
+	void recalculateGravFieldStrength();
 
 	void attachPlanet(Planet& plnt);
 
@@ -53,9 +65,9 @@ public:
 	void displayRadius();
 
 private:
-	void storeGravPoints();
+	void createGravPoints();	//needs to have GravFieldStr already calculated
 	void sortGravPoints();
-	void updateGravPoints();
+	void updateGravPointsByVelDelta();
 	bool planetInGravField(const Planet& plnt) const;
 
 	void interactWithPlanets(float fElapsedTime);
@@ -84,8 +96,8 @@ private:
 	State state;
 	vector<Planet*>vOrbitingPlanets;
 	vector<Vec2>vGravPoints;
-	int GravFieldSize;
-	float GravFieldStrenght;
+	int gravFieldTotalPointsOfBigger;
+	float gravFieldStrenght;
 	float fTicker;
 	float speed;
 

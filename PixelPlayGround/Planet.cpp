@@ -1,5 +1,4 @@
 #include "Planet.h"
-//#include <algorithm>
 
 void Planet::draw()
 {
@@ -34,13 +33,27 @@ void Planet::attract(Planet& plnt, Vec2 here, float fElapsedTime)
 	plnt.position += moveHere;
 
 	plnt.deltaPos = moveHere;	//calculate next position delta
-	plnt.updateGravPoints();				//update all gravPoints according to delta
+	plnt.updateGravPointsByVelDelta();				//update all gravPoints according to delta
 }
+
+
+void Planet::update(float fElapsedTime)
+{
+	fTicker += fElapsedTime * speed;
+
+	if (fTicker >= gravFieldTotalPointsOfBigger)
+		fTicker = 0.0f;
+
+	interactWithPlanets(fElapsedTime);
+
+}
+
 
 void Planet::interactWithPlanets(float fElapsedTime)
 {
 
 	if (!vOrbitingPlanets.empty()) 
+
 		for (Planet* plnt : vOrbitingPlanets) {
 
 			switch (plnt->state) {
@@ -54,7 +67,8 @@ void Planet::interactWithPlanets(float fElapsedTime)
 			case PULLED:
 				if (planetInGravField(*plnt)) {
 					plnt->fTicker = closestGravPointTo(*plnt);
-					plnt->storeGravPoints();
+					plnt->createGravPoints();
+					broadcastGravSzToPlanets();
 					plnt->state = ORBITING;
 					break;
 				}		
@@ -73,7 +87,7 @@ void Planet::interactWithPlanets(float fElapsedTime)
 
 
 
-void Planet::updateGravPoints()
+void Planet::updateGravPointsByVelDelta()
 {
 	for (Vec2& point : vGravPoints)
 		point += deltaPos;
@@ -84,7 +98,7 @@ bool Planet::planetInGravField(const Planet& plnt) const
 {
 	// if the distance between small and big is less than the radius of the grav field of puller, return true
 	
-	return (position - plnt.position).GetLengthSq() < (Vec2{ 0, GravFieldStrenght}).GetLengthSq();
+	return (position - plnt.position).GetLengthSq() < (Vec2{ 0, gravFieldStrenght}).GetLengthSq();
 
 	
 }
@@ -98,39 +112,24 @@ void Planet::move(Planet& plnt, Vec2& here)
 
 
 	plnt.deltaPos = here - plnt.position;	//calculate next position delta
-	plnt.updateGravPoints();				//update all gravPoints according to delta
+	plnt.updateGravPointsByVelDelta();				//update all gravPoints according to delta
 
 	plnt.position = here;					//update position
 
-	
-	//plnt.storeGravPoints();				//horrible way of "updating" gravPoints
 }
 
 void Planet::broadcastGravSzToPlanets()
 {
 	if (!vOrbitingPlanets.empty())
 		for (Planet* plnt : vOrbitingPlanets) {
-			plnt->GravFieldSize = vGravPoints.size();
-			plnt->fTicker = closestGravPointTo(*plnt);	// if we change the GravFieldSize we also need to me sure the current Ticker of each small planet is not stuck with its old ticker value, which could be bigger than the entire newGravField size
+			plnt->gravFieldTotalPointsOfBigger = vGravPoints.size();
+			plnt->fTicker = closestGravPointTo(*plnt);	// if we change the gravFieldTotalPointsOfBigger we also need to me sure the current Ticker of each small planet is not stuck with its old ticker value, which could be bigger than the entire newGravField size
 		}
 }
 
 float Planet::getTick() const
 {
 	return fTicker;
-}
-
-
-
-void Planet::update(float fElapsedTime)
-{
-	fTicker += fElapsedTime * speed;
-
-	if (fTicker >= GravFieldSize)
-		fTicker = 0.0f;
-
-	interactWithPlanets(fElapsedTime);
-
 }
 
 
@@ -145,18 +144,18 @@ bool Planet::isDeployed() const
 void Planet::deploy()
 {
 	deployed = true;
-	storeGravPoints();
+	createGravPoints();
 }
 
-void Planet::storeGravPoints()
+void Planet::createGravPoints()
 {
 	if (!vGravPoints.empty())		// if for some reason we need to recalculate the whole thing -> delete all and make a clean start
 		vGravPoints.clear();
 
 
 	int x0 = 0;
-	int y0 = GravFieldStrenght;
-	int d = 3 - 2 * GravFieldStrenght;
+	int y0 = gravFieldStrenght;
+	int d = 3 - 2 * gravFieldStrenght;
 	if (!radius) return;
 
 	while (y0 >= x0) // only formulate 1/8 of circle
@@ -175,7 +174,6 @@ void Planet::storeGravPoints()
 	}
 
 	sortGravPoints();
-	broadcastGravSzToPlanets();
 }
 
 void Planet::sortGravPoints()
@@ -265,8 +263,7 @@ void Planet::showGrav()
 
 void Planet::setGravField(int val)
 {
-	GravFieldStrenght = val;
-	storeGravPoints();
+	gravFieldStrenght = val;
 }
 
 
@@ -284,14 +281,15 @@ void Planet::displayRadius()
 void Planet::modifySize(int mod)
 {
 	radius += mod;
-	GravFieldStrenght = getRadius();
-	storeGravPoints();
+	gravFieldStrenght = getRadius();
+	createGravPoints();
 }
 
 void Planet::modFieldStr(int mod)
 {
-	GravFieldStrenght += mod;
-	storeGravPoints();
+	gravFieldStrenght += mod;
+	createGravPoints();
+	broadcastGravSzToPlanets();
 }
 
 int Planet::getRadius() const
@@ -372,16 +370,18 @@ void Planet::attachPlanet(Planet& plnt)
 	vOrbitingPlanets.push_back(&plnt);
 
 
-	if (currentGravFieldAccomodation < incomingPlanetGravFieldSpaceNeeds)
-		setGravField(radius + mysteriousCalculation(vOrbitingPlanets, 0, 1) );
-		
+	if (currentGravFieldAccomodation < incomingPlanetGravFieldSpaceNeeds) {
+		setGravField(radius + mysteriousCalculation(vOrbitingPlanets, 0, 1));
+		createGravPoints();
+	}
 
-	broadcastGravSzToPlanets();
+	broadcastGravSzToPlanets();		// communicate how many points of GravField we currently have to the newly attached planets so they can cycle
 }
 
-void Planet::recalculateGravField()
+void Planet::recalculateGravFieldStrength()
 {
 	setGravField(radius + mysteriousCalculation(vOrbitingPlanets, 0, 1));
+	createGravPoints();
 	broadcastGravSzToPlanets();
 }
 

@@ -63,7 +63,8 @@ public:
 			// Displays gravitity Field
 			if (showGravity)
 				for (Planet* plnt : vTotalPlanets)
-					plnt->showGrav();
+					if (plnt->isDeployed())
+						plnt->showGrav();
 
 
 		//	Selects which planet we want to manipulate
@@ -71,8 +72,11 @@ public:
 			// J- H+ for controlIndex2 selection
 		if (GetKey(olc::M).bPressed)
 			controlIndex1++;
-		if (GetKey(olc::N).bPressed)
-			controlIndex1--;		
+		if (GetKey(olc::N).bPressed) {
+			if (controlIndex1 == -1)
+				controlIndex1 = vTotalPlanets.size() - 1;
+				controlIndex1--;
+		}
 		if (GetKey(olc::J).bPressed)
 			controlIndex2++;
 		if (GetKey(olc::H).bPressed)
@@ -91,7 +95,7 @@ public:
 			vTotalPlanets[controlIndex1]->modFieldStr(5);
 
 
-		// Draw gravField first, update plantes, draw planets
+		// update plantes, draw planets
 		for (int i = 0; i < vTotalPlanets.size(); i++)
 		{
 			vTotalPlanets[i]->update(fElapsedTime);
@@ -205,12 +209,11 @@ void Demo::checkMouse()
 						last_created_planet.attachPlanet(getPreviousBiggest());					
 				}
 				else {
-
 					vTotalPlanets[controlIndex1]->attachPlanet(last_created_planet);
 
 					for (Planet* plnt : vTotalPlanets)
 						if (plnt->isStable())
-							plnt->recalculateGravField();
+							plnt->recalculateGravFieldStrength();
 				}
 			}
 		}
@@ -228,12 +231,14 @@ bool Demo::allPlanetsDeployed()
 
 Planet& Demo::getUndeployedPlanet()
 {
+	Planet* p = vTotalPlanets[0];
+
 	for (Planet* plnt : vTotalPlanets)
 		if (!plnt->isDeployed())
 			return *plnt;
 
+	return *p;	//placeholder for compiler warning bypass
 
-	//WARNING: RETURN CONTROL PATH SHOULD BE FULLY IMPLEMENTED
 }
 
 bool Demo::isSmaller()
