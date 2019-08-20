@@ -94,6 +94,22 @@ public:
 		if (GetKey(olc::P).bHeld)
 			vTotalPlanets[controlIndex1]->modFieldStr(1);
 
+		// increase/decrease size of all planets SHIFT and scroll
+		if (GetKey(olc::SHIFT).bHeld)
+			switch (GetMouseWheel()) {
+
+			case 120:
+				for (Planet* plnt : vTotalPlanets)
+					plnt->modifySize(1);
+				break;
+			case -120:
+				for (Planet* plnt : vTotalPlanets)
+					plnt->modifySize(-1);
+				break;
+			default:
+				break;
+			}
+
 
 		// update plantes, draw planets
 		for (int i = 0; i < vTotalPlanets.size(); i++)

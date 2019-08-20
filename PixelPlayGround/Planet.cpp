@@ -280,9 +280,12 @@ void Planet::displayRadius()
 
 void Planet::modifySize(int mod)
 {
-	radius += mod;
-	gravFieldStrenght = getRadius();
-	recalculateGravFieldStrength();
+	if (radius >= 3) {
+
+		radius += mod;
+		gravFieldStrenght = getRadius();
+		recalculateGravFieldStrength();
+	}
 }
 
 void Planet::modFieldStr(int mod)
