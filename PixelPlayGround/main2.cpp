@@ -89,10 +89,10 @@ public:
 
 
 		// O- P+ to increase or decrease GravField of selected controlIndex1 Planet
-		if (GetKey(olc::O).bPressed)
-			vTotalPlanets[controlIndex1]->modFieldStr(-5);
-		if (GetKey(olc::P).bPressed)
-			vTotalPlanets[controlIndex1]->modFieldStr(5);
+		if (GetKey(olc::O).bHeld)
+			vTotalPlanets[controlIndex1]->modFieldStr(-1);
+		if (GetKey(olc::P).bHeld)
+			vTotalPlanets[controlIndex1]->modFieldStr(1);
 
 
 		// update plantes, draw planets

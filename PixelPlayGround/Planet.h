@@ -80,7 +80,7 @@ private:
 	void setGravField(int val);
 
 	//recur
-	int mysteriousCalculation(vector<Planet*>& vPlnts, int radius, int recurStep);
+	int getGravFieldNeedsOfSmallerPlanets(vector<Planet*>& vPlnts, int radius, int recurStep);
 	int getAttachedPlanetsCount(vector<Planet*>& vPlnts);
 	int getDeepestChainPlanetCount(vector<Planet*>& vPlnts, int level);
 

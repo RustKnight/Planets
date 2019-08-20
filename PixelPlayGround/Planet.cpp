@@ -282,7 +282,7 @@ void Planet::modifySize(int mod)
 {
 	radius += mod;
 	gravFieldStrenght = getRadius();
-	createGravPoints();
+	recalculateGravFieldStrength();
 }
 
 void Planet::modFieldStr(int mod)
@@ -342,7 +342,7 @@ int Planet::getDeepestChainPlanetCount(vector<Planet*>& vPlnts, int level)
 }
 
 
-int Planet::mysteriousCalculation(vector<Planet*>& vPlnts, int radius, int recurStep)
+int Planet::getGravFieldNeedsOfSmallerPlanets(vector<Planet*>& vPlnts, int radius, int recurStep)
 {
 	// enter with 1 and increase recurStep by multiple of 2
 
@@ -352,7 +352,7 @@ int Planet::mysteriousCalculation(vector<Planet*>& vPlnts, int radius, int recur
 	vector<int> holder;
 
 	for (Planet* plnt : vPlnts)
-		holder.push_back (mysteriousCalculation(plnt->vOrbitingPlanets, plnt->radius, recurStep * 2) );
+		holder.push_back (getGravFieldNeedsOfSmallerPlanets(plnt->vOrbitingPlanets, plnt->radius, recurStep * 2) );
 
 	vector<int>::iterator result;
 	result = max_element(holder.begin(), holder.end());
@@ -364,14 +364,14 @@ int Planet::mysteriousCalculation(vector<Planet*>& vPlnts, int radius, int recur
 void Planet::attachPlanet(Planet& plnt)
 {
 
-	int incomingPlanetGravFieldSpaceNeeds = plnt.radius + plnt.mysteriousCalculation(plnt.vOrbitingPlanets, 0, 1);
-	int currentGravFieldAccomodation = mysteriousCalculation(vOrbitingPlanets, 0, 1);	
+	int incomingPlanetGravFieldSpaceNeeds = plnt.radius + plnt.getGravFieldNeedsOfSmallerPlanets(plnt.vOrbitingPlanets, 0, 1);
+	int currentGravFieldAccomodation = getGravFieldNeedsOfSmallerPlanets(vOrbitingPlanets, 0, 1);	
 	
 	vOrbitingPlanets.push_back(&plnt);
 
 
 	if (currentGravFieldAccomodation < incomingPlanetGravFieldSpaceNeeds) {
-		setGravField(radius + mysteriousCalculation(vOrbitingPlanets, 0, 1));
+		setGravField(radius + getGravFieldNeedsOfSmallerPlanets(vOrbitingPlanets, 0, 1));
 		createGravPoints();
 	}
 
@@ -380,7 +380,7 @@ void Planet::attachPlanet(Planet& plnt)
 
 void Planet::recalculateGravFieldStrength()
 {
-	setGravField(radius + mysteriousCalculation(vOrbitingPlanets, 0, 1));
+	setGravField(radius + getGravFieldNeedsOfSmallerPlanets(vOrbitingPlanets, 0, 1));
 	createGravPoints();
 	broadcastGravSzToPlanets();
 }
