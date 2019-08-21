@@ -26,14 +26,14 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Planet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Vec2.cpp">
       <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

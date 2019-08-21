@@ -4,46 +4,23 @@
 #include <vector>
 #include "conio.h"
 
+#include "Planet.h"
+
 
 using namespace std;
 
-
-class MyShape {
-
-public:
-	MyShape(int x, int y, olc::PixelGameEngine& ptrPge) : x{ x }, y{ y }, ptrPge{ &ptrPge } {}
-	virtual void draw() = 0;
-
-protected:
-	int x;
-	int y;
-	int size = 6;
-	olc::PixelGameEngine* ptrPge;
-};
-
-
-class Circle : public MyShape {
-
-public:
-	Circle(int x, int y, olc::PixelGameEngine& ptrPge) : MyShape(x, y, ptrPge) {}
-
-	void draw() override { ptrPge->FillCircle(x, y, size, olc::RED); }
-	void follow() {x = ptrPge->GetMouseX() - 10; y = ptrPge->GetMouseY() - 10; }
-
-	void modSize(int s) { size += s; }
-
-};
-
+// Do not take refrences or pointers to Vector Elements -> these elements are prone to change their memeory address, leaving you with an invalid pointer
 
 class Demo : public olc::PixelGameEngine
 {
 
-// DEMO Constructor
+	// DEMO Constructor
 public:
-	Demo() : c(ScreenWidth() / 2, ScreenHeight() / 2, *this)
+	Demo()
 	{
 		sAppName = "Example";
 	}
+
 
 
 public:
@@ -51,7 +28,7 @@ public:
 
 	bool OnUserCreate() override
 	{
-		
+
 		
 
 		return true;
@@ -63,50 +40,119 @@ public:
 	{
 		Clear(olc::BLACK);
 
-		if (GetMouse(0).bPressed)
-			followMouse = !followMouse;
+		//Debug
+			
+			//Control Index display
+			DrawString(5, 5, to_string(controlIndex1), olc::YELLOW, 1);
+			DrawString(20, 5, to_string(controlIndex2), olc::RED, 1);
 
-		if (followMouse)
+			// G key to Show/Hide Grav Field
+			if (GetKey(olc::G).bPressed)
+				showGravity = !showGravity;
+
+			// Display small square to show which Attach-Mode we're in
+			if (attachToBiggest)
+				FillRect(5, 20, 5, 5, olc::GREY);
+			else
+				FillRect(5, 20, 5, 5, olc::YELLOW);
+
+			// Change attach-mode rules;
+			if (GetKey(olc::SPACE).bPressed)
+				attachToBiggest = !attachToBiggest;
+
+			// Displays gravitity Field
+			if (showGravity)
+				for (Planet* plnt : vTotalPlanets)
+					if (plnt->isDeployed())
+						plnt->showGrav();
+
+
+		//	Selects which planet we want to manipulate
+			// N- M+ for controlIndex1 selection
+			// J- H+ for controlIndex2 selection
+		if (GetKey(olc::M).bPressed)
+			controlIndex1++;
+		if (GetKey(olc::N).bPressed) {
+			if (controlIndex1 == -1)
+				controlIndex1 = vTotalPlanets.size() - 1;
+				controlIndex1--;
+		}
+		if (GetKey(olc::J).bPressed)
+			controlIndex2++;
+		if (GetKey(olc::H).bPressed)
+			controlIndex2--;
+
+
+		// L key to add the GravField value of Planet[ControlIndex2] to GravField of Planet[ControlIndex1]
+		if (GetKey(olc::L).bPressed)
+			vTotalPlanets[controlIndex1]->modFieldStr(vTotalPlanets[controlIndex2]->getRadius());
+
+
+		// O- P+ to increase or decrease GravField of selected controlIndex1 Planet
+		if (GetKey(olc::O).bHeld)
+			vTotalPlanets[controlIndex1]->modFieldStr(-1);
+		if (GetKey(olc::P).bHeld)
+			vTotalPlanets[controlIndex1]->modFieldStr(1);
+
+		// increase/decrease size of all planets SHIFT and scroll
+		if (GetKey(olc::SHIFT).bHeld)
 			switch (GetMouseWheel()) {
 
 			case 120:
-				c.modSize(+1);
+				for (Planet* plnt : vTotalPlanets)
+					plnt->modifySize(1);
 				break;
-
 			case -120:
-				c.modSize(-1);
+				for (Planet* plnt : vTotalPlanets)
+					plnt->modifySize(-1);
 				break;
-			
 			default:
 				break;
 			}
 
 
-		if (followMouse)
-			c.follow();	
+		// update plantes, draw planets
+		for (int i = 0; i < vTotalPlanets.size(); i++)
+		{
+			vTotalPlanets[i]->update(fElapsedTime);
+			vTotalPlanets[i]->draw();
+			vTotalPlanets[i]->displayRadius();			
+		}
 
-		c.draw();
 
-		mouseSnoop = GetMouseWheel();
+		// Control creation process of Planets and attach rules
+		checkMouse();
 
-		if (mouseSnoop != temp)
-			cout << mouseSnoop << endl;
-
-		temp = mouseSnoop;
 
 		return true;
 	}
 
+	// DEMO Function Members
+	void createPlanet();
+	void checkMouse();
+	bool allPlanetsDeployed();
+	Planet& getUndeployedPlanet();
+	bool isSmaller();
+	Planet& getBiggest();
+	Planet& getPreviousBiggest();
 
-
-// DEMO Data Members
+	// DEMO Data Members
 private:
-
-	int mouseSnoop = 0;
-	int temp = -55;
-	Circle c;
-	bool followMouse = false;
+	vector<Planet*> vTotalPlanets;
+	int controlIndex1 = 0;
+	int controlIndex2 = 0;
+	bool showGravity = true;
+	bool attachToBiggest = true;
 };
+
+
+
+
+
+
+
+
+
 
 
 
@@ -116,12 +162,141 @@ private:
 
 int main() {
 
-	
+
 	Demo demo;
-	if (demo.Construct(256, 240, 4, 4))
+	if (demo.Construct(400, 400, 4, 4))
 		demo.Start();
-		
+
 
 	//_getch();
 	return 0;
+}
+
+void Demo::createPlanet()
+{
+	vTotalPlanets.push_back(new Planet{ *this, 10, Vec2{ float(GetMouseX() - 10), float(GetMouseY() - 10) }, olc::Pixel {uint8_t (rand() % 255), uint8_t(rand() % 255), uint8_t(rand() % 255) } });
+
+}
+
+void Demo::checkMouse()
+{
+
+	// No planet ON MOUSE and we just pressed RIGHT CLICK 
+	if (GetMouse(1).bPressed && allPlanetsDeployed()) 
+		createPlanet();
+	
+
+	// Planet ON MOUSE and is ready for DEPLOY
+	// In this phase we can resize the planet and move it around
+	else if (!allPlanetsDeployed()) {
+
+		Planet& plnt = getUndeployedPlanet();
+	
+		switch (GetMouseWheel()) {
+
+			case 120:
+				plnt.modifySize(+1);
+				break;
+			case -120:
+				plnt.modifySize(-1);
+				break;
+			default:
+				break;
+		}
+
+		plnt.followMouse();
+	
+		if (GetMouse(1).bPressed) {		// deploy planet and attach to first created planet, if we have more than one planet deployed...
+
+			plnt.deploy();
+
+			if (vTotalPlanets.size() > 1) {			
+
+				Planet& last_created_planet = *vTotalPlanets[vTotalPlanets.size() - 1];
+
+				if (attachToBiggest) {
+					
+					// if newly created planet is smaller than current planets, go to biggest
+					if (isSmaller())
+						getBiggest().attachPlanet(last_created_planet);
+					
+					// if newly created planet is bigger than all current planets, attach next smallest planet to it
+					else
+						last_created_planet.attachPlanet(getPreviousBiggest());					
+				}
+				else {
+					vTotalPlanets[controlIndex1]->attachPlanet(last_created_planet);
+
+					for (Planet* plnt : vTotalPlanets)
+						if (plnt->isStable())
+							plnt->recalculateGravFieldStrength();
+				}
+			}
+		}
+	}
+}
+
+bool Demo::allPlanetsDeployed()
+{
+	for (Planet* plnt : vTotalPlanets)
+		if (!plnt->isDeployed())
+			return false;
+
+	return true;
+}
+
+Planet& Demo::getUndeployedPlanet()
+{
+	Planet* p = vTotalPlanets[0];
+
+	for (Planet* plnt : vTotalPlanets)
+		if (!plnt->isDeployed())
+			return *plnt;
+
+	return *p;	//placeholder for compiler warning bypass
+
+}
+
+bool Demo::isSmaller()
+{
+
+	Planet& testedPlanet = *vTotalPlanets[vTotalPlanets.size() - 1];
+	bool result = false;
+
+	for (int i = 0; i < vTotalPlanets.size() - 1; i++)		//test all but the last one
+	{
+		if (vTotalPlanets[i]->getRadius() >= testedPlanet.getRadius())
+			return true;
+	}
+
+	return result;
+}
+
+Planet & Demo::getBiggest()
+{
+
+	Planet* biggest = vTotalPlanets[0];
+
+	for (int i = 0; i < vTotalPlanets.size(); i++)		
+	{
+		if (vTotalPlanets[i]->getRadius() > biggest->getRadius())
+			biggest = vTotalPlanets[i];
+	}
+
+	return *biggest;
+}
+
+Planet & Demo::getPreviousBiggest()
+{
+
+	Planet* biggest = vTotalPlanets[0];
+
+	for (int i = 0; i < vTotalPlanets.size() - 1; i++)		//get second biggest
+	{
+		if (vTotalPlanets[i]->getRadius() > biggest->getRadius())
+			biggest = vTotalPlanets[i];
+	}
+
+	return *biggest;
+	
 }
